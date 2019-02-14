@@ -30,7 +30,7 @@
 
 
 ```sh
-$ ./main.sh
+$ ./start.sh
 [<0.78.0> udp_sup:init#22]
 	#Port<0.5>
 ===== process =====
