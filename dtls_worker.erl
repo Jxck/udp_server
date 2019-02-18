@@ -4,6 +4,8 @@
 -compile(export_all).
 -include("../logger.hrl").
 
+-define(TIMEOUT, 3000).
+
 %%====================================================================
 %% API functions
 %%====================================================================
@@ -24,6 +26,16 @@ init(State) ->
 
 callback_mode() ->
     state_functions.
+
+
+listening(timeout, ?TIMEOUT, State) ->
+    {stop, {shutdown, timeout}};
+
+listening(cast, <<"dtls\n">>, State) ->
+    ?Log(received, dtls),
+    {keep_state_and_data, ?TIMEOUT};
+
+
 
 listening(cast, dtls, State) ->
     ?Log(received, dtls),

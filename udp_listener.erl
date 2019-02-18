@@ -9,8 +9,9 @@
 %%====================================================================
 %% API functions
 %%====================================================================
-start_link(#{}, #{}) ->
-    ?Log(gen_statem:start_link({local, ?MODULE}, ?MODULE, #{}, [])).
+start_link(#{}, #{socket := Socket}) ->
+    ?Log(Socket),
+    ?Log(gen_statem:start_link({local, ?MODULE}, ?MODULE, #{socket => Socket}, [])).
 
 stop(Pid) ->
     ?Log(gen_statem:stop(Pid)).
@@ -19,7 +20,7 @@ stop(Pid) ->
 %%====================================================================
 %% Behaviour callbacks
 %%====================================================================
-init(State) ->
+init(#{socket := Socket}=State) ->
     process_flag(trap_exit, true),
 
     % spawn worker and link
@@ -44,6 +45,22 @@ listening(info, {'EXIT', PID, Reason}, State) ->
     ?Log(PID, Reason),
     ?Log(State),
     {stop, {shutdown, child_termination}};
+
+
+
+listening(info, {udp, Socket, IP, Port, Packet}, #{socket      := Socket,
+                                                   dtls_worker := DTLS,
+                                                   srtp_worker := SRTP}=State) ->
+    ?Log(Packet, State),
+    case Packet of
+        <<"dtls\n">> -> gen_statem:cast(DTLS, Packet);
+        <<"srtp\n">> -> gen_statem:cast(SRTP, Packet)
+    end,
+    ok = inet:setopts(Socket, [{active, once}, binary]),
+    keep_state_and_data;
+
+
+
 
 listening(timeout, ?TIMEOUT, State) ->
     {stop, {shutdown, timeout}};

@@ -7,18 +7,21 @@
 main([]) ->
     ?Log(udp_sup:start_link(#{})),
 
-    {ok, UDP} = ?Log(udp_listener_sup:start_child(#{})),
-    (gen_statem:cast(UDP, udp)),
-    (gen_statem:cast(UDP, dtls)),
-    (gen_statem:cast(UDP, srtp)),
+    {ok, Socket} = gen_udp:open(3000, [{reuseaddr, true}, {active, false}]),
+
+
+    {ok, UDP} = ?Log(udp_listener_sup:start_child(#{socket => Socket})),
+    ok = gen_tcp:controlling_process(Socket, UDP),
+    ok = inet:setopts(Socket, [{active, once}, binary]),
+
+    %(gen_statem:cast(UDP, udp)),
+    %(gen_statem:cast(UDP, dtls)),
+    %(gen_statem:cast(UDP, srtp)),
 
     %{ok, _}      = sfu_sup:start_link(#{}),
-    %{ok, Socket}   = gen_udp:open(3000, [{reuseaddr, true}, {active, false}]),
     %{ok, _} = sfu_sup:start_child(#{socket => Socket}),
 
     %PID = whereis(name_from_port(udp_worker, Socket)),
-    %ok  = gen_tcp:controlling_process(Socket, PID),
-    %ok  = inet:setopts(Socket, [{active, once}, binary]),
 
     dump_process(),
 

@@ -10,7 +10,7 @@
 start_link(#{}=State) ->
     (supervisor:start_link({local, ?MODULE}, ?MODULE, State)).
 
-start_child(#{}=State) ->
+start_child(#{socket := Socket}=State) ->
     (supervisor:start_child(?MODULE, [State])).
 
 terminate_child(PID) ->
