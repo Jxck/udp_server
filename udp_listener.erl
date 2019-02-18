@@ -11,7 +11,8 @@
 %%====================================================================
 start_link(#{}, #{socket := Socket}) ->
     ?Log(Socket),
-    ?Log(gen_statem:start_link({local, ?MODULE}, ?MODULE, #{socket => Socket}, [])).
+    Name = main:name_from_port(?MODULE, Socket),
+    ?Log(gen_statem:start_link({local, Name}, ?MODULE, #{socket => Socket}, [])).
 
 stop(Pid) ->
     ?Log(gen_statem:stop(Pid)).
@@ -24,8 +25,8 @@ init(#{socket := Socket}=State) ->
     process_flag(trap_exit, true),
 
     % spawn worker and link
-    {ok, DTLS} = ?Log(dtls_worker_sup:start_child(#{})),
-    {ok, SRTP} = ?Log(srtp_worker_sup:start_child(#{})),
+    {ok, DTLS} = ?Log(dtls_worker_sup:start_child(#{socket => Socket})),
+    {ok, SRTP} = ?Log(srtp_worker_sup:start_child(#{socket => Socket})),
 
     true = ?Log(link(DTLS)),
     true = ?Log(link(SRTP)),

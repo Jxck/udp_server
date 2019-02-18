@@ -9,8 +9,10 @@
 %%====================================================================
 %% API functions
 %%====================================================================
-start_link(#{}, #{}) ->
-    ?Log(gen_statem:start_link({local, ?MODULE}, ?MODULE, #{}, [])).
+start_link(#{}, #{socket := Socket}) ->
+    ?Log(Socket),
+    Name = main:name_from_port(?MODULE, Socket),
+    ?Log(gen_statem:start_link({local, Name}, ?MODULE, #{socket => Socket}, [])).
 
 stop(Pid) ->
     ?Log(gen_statem:stop(Pid)).
