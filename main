@@ -7,13 +7,10 @@
 main([]) ->
     ?Log(udp_sup:start_link(#{})),
 
-    N = 3,
-    lists:foreach(fun(Port) ->
-                          {ok, Socket} = gen_udp:open(Port, [{reuseaddr, true}, {active, false}]),
-                          {ok, UDP} = ?Log(udp_listener_sup:start_child(#{socket => Socket})),
-                          ok = gen_tcp:controlling_process(Socket, UDP),
-                          ok = inet:setopts(Socket, [{active, once}, binary])
-                  end, lists:seq(3000, 3003)),
+    {ok, Socket} = gen_udp:open(3000, [{reuseaddr, true}, {active, false}]),
+    {ok, UDP} = ?Log(udp_listener_sup:start_child(#{socket => Socket})),
+    ok = gen_tcp:controlling_process(Socket, UDP),
+    ok = inet:setopts(Socket, [{active, once}, binary]),
 
     dump_process(),
 
